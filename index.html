@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BREVIFY — Read Less. Understand More.</title>
+  <meta name="description" content="BREVIFY is a premium AI-powered Blog Summarizer. Paste a URL or text and get an instant, streaming summary." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="bg">
+    <div class="grid"></div>
+    <div class="glow-top"></div>
+    <div class="glow-bottom"></div>
+    <div class="particles" aria-hidden="true"></div>
+  </div>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="BREVIFY home">
+        <span class="bolt" aria-hidden="true"></span>
+        <span class="brand-text">BREVIFY</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#how">How It Works</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <div class="nav-cta">
+        <button class="btn btn-primary" type="button" data-scroll="#summarizer">100% Free</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container hero-inner">
+        <div class="center">
+          <div class="badge-slide" role="note">
+            <span class="badge-shimmer"></span>
+            <span class="badge-text">✦ AI-POWERED SUMMARIZATION</span>
+          </div>
+
+          <h1 class="hero-title" aria-label="Read Less. Understand More.">
+            <span class="line reveal">Read Less.</span>
+            <span class="line reveal gradient-text" data-gradient="violet">Understand More.</span>
+          </h1>
+
+          <p class="hero-sub reveal delay">
+            Paste any blog URL or text and get an instant AI-powered summary in seconds. Save hours of reading time.
+          </p>
+
+          <div id="summarizer" class="spacer-20"></div>
+
+          <!-- INPUT CARD -->
+          <div class="card hero-card float-in" aria-label="Summarizer input">
+            <div class="card-glow"></div>
+
+            <!-- Tabs -->
+            <div class="tabs" role="tablist" aria-label="Input method">
+              <button class="tab is-active" type="button" data-tab="url" role="tab" aria-selected="true">
+                <span class="tab-icon" aria-hidden="true"></span>
+                Paste URL
+              </button>
+              <button class="tab" type="button" data-tab="text" role="tab" aria-selected="false">
+                <span class="tab-icon" aria-hidden="true"></span>
+                Paste Text
+              </button>
+            </div>
+
+            <div class="tab-panels">
+              <!-- URL panel -->
+              
+<div class="panel is-active" data-panel="url" role="tabpanel">
+  <div class="input-row">
+    <div class="input-wrap">
+      <span class="input-icon" aria-hidden="true"></span>
+      <input id="urlInput" class="input" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://example.com/blog-post" />
+      <button id="clearUrl" class="clear-btn" type="button" aria-label="Clear URL" title="Clear">×</button>
+    </div>
+  </div>
+
+  <button id="summarizeBtn" class="btn btn-summarize" type="button">
+    <span class="btn-spark" aria-hidden="true"></span>
+    <span class="btn-content">
+      <span class="bolt-mini" aria-hidden="true"></span>
+      <span class="btn-text">Summarize Now →</span>
+    </span>
+    <span class="btn-spinner" aria-hidden="true"></span>
+  </button>
+
+  <div id="progressWrap" class="progress-wrap" aria-live="polite">
+    <div class="progress-top">
+      <span id="statusLine" class="status-line">Ready.</span>
+      <span id="statusStep" class="status-step">—</span>
+    </div>
+    <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div id="progressFill" class="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="mono micro" id="progressDetail">Click summarize to analyze. Streaming will begin immediately.</div>
+  </div>
+</div>
+              <!-- Text panel -->
+<div class="panel" data-panel="text" role="tabpanel" hidden>
+  <div class="text-wrap">
+  <textarea id="textInput" class="textarea" placeholder="Paste your blog post or article text here to get an instant AI-powered summary..." maxlength="100000"></textarea>
+  <div class="textarea-meta">
+    <span class="counter" id="charCount">0 / 10,000</span>
+  </div>
+</div>
+
+  <button id="summarizeBtnText" class="btn btn-summarize" type="button">
+    <span class="btn-spark" aria-hidden="true"></span>
+    <span class="btn-content">
+      <span class="bolt-mini" aria-hidden="true"></span>
+      <span class="btn-text">Summarize Now →</span>
+    </span>
+    <span class="btn-spinner" aria-hidden="true"></span>
+  </button>
+
+  <div id="progressWrapText" class="progress-wrap" aria-live="polite" hidden>
+    <div class="progress-top">
+      <span id="statusLineText" class="status-line">Ready.</span>
+      <span id="statusStepText" class="status-step">—</span>
+    </div>
+    <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div id="progressFillText" class="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="mono micro" id="progressDetailText">Click summarize to analyze. Streaming will begin immediately.</div>
+  </div>
+</div>
+
+          <!-- OUTPUT CARD (hidden initially) -->
+          <div id="outputWrap" class="output-wrap" hidden>
+            <div class="card output-card reveal">
+              <div class="card-glow"></div>
+
+              <div class="output-header">
+                <div class="output-left">
+                  <div class="ready-row">
+                    <span class="ready-dot" aria-hidden="true"></span>
+                    <span class="output-title">Summary Ready</span>
+                  </div>
+                  <div class="blog-title" id="blogTitle"></div>
+                </div>
+
+                <div class="output-right">
+                  <div class="stats mono">
+                    <div>Original: <span id="origWords">—</span> words</div>
+                    <div>Summary: <span id="sumWords">—</span> words</div>
+                    <div>Time saved: <span id="timeSaved">—</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="summary-body">
+                <div class="summary-box">
+                  <div class="summary-stream" id="streamText" aria-live="polite"></div>
+                  <span id="cursor" class="cursor" aria-hidden="true">▍</span>
+                </div>
+              </div>
+
+              <div class="actions">
+                <div class="actions-left">
+                  <button class="btn btn-subtle" type="button" id="copyBtn">Copy Summary</button>
+                  <button class="btn btn-subtle" type="button" id="downloadBtn">Download .txt</button>
+                  <button class="btn btn-subtle" type="button" id="shareBtn">Share</button>
+                </div>
+                <div class="actions-right">
+                  <button class="btn btn-outline-violet" type="button" id="regenBtn">Regenerate</button>
+                  <button class="btn btn-primary" type="button" id="saveBtn">Save Summary</button>
+                </div>
+              </div>
+
+              <div class="rating" id="ratingRow">
+                <div class="rating-label">Was this summary helpful?</div>
+                <div class="rating-pills">
+                  <button class="btn btn-rate" type="button" data-rate="up">Thumbs up</button>
+                  <button class="btn btn-rate" type="button" data-rate="down">Thumbs down</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading state note: shown while streaming -->
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how" class="section">
+      <div class="container">
+        <div class="section-head">
+          <div class="kicker">HOW IT WORKS</div>
+          <h2 class="h2">Three Steps to Clarity.</h2>
+        </div>
+
+        <div class="steps" role="list">
+  <div class="step" role="listitem">
+    <div class="step-num">01</div>
+    <div class="step-title">Paste Your Content</div>
+    <div class="step-desc">Drop in a blog URL or paste text directly. We support all major blog platforms.</div>
+  </div>
+  <div class="step-connector" aria-hidden="true"></div>
+  <div class="step" role="listitem">
+    <div class="step-num">02</div>
+    <div class="step-title">Choose Your Settings</div>
+    <div class="step-desc">Select summary length, language, and output style to match your needs.</div>
+  </div>
+  <div class="step-connector" aria-hidden="true"></div>
+  <div class="step" role="listitem">
+    <div class="step-num">03</div>
+    <div class="step-title">Get Instant Summary</div>
+    <div class="step-desc">AI generates a precise summary in seconds. Copy, download, or share it.</div>
+  </div>
+</div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="section section-alt">
+      <div class="container">
+        <div class="section-head">
+          <div class="kicker">FEATURES</div>
+          <h2 class="h2">Everything You Need.</h2>
+        </div>
+
+        <div class="grid-3">
+  <div class="feat">
+    <div class="feat-title">Instant Summaries</div>
+    <div class="feat-desc">Get summaries in under 10 seconds powered by advanced AI models.</div>
+  </div>
+  <div class="feat">
+    <div class="feat-title">Any URL Support</div>
+    <div class="feat-desc">Works with Medium, Substack, WordPress, news sites and thousands more platforms.</div>
+  </div>
+  <div class="feat">
+    <div class="feat-title">Smart Analysis</div>
+    <div class="feat-desc">Extracts key points, main arguments and important data automatically.</div>
+  </div>
+  <div class="feat">
+    <div class="feat-title">Save & Export</div>
+    <div class="feat-desc">Save summaries to your library and export as PDF, TXT, or Markdown.</div>
+  </div>
+  <div class="feat">
+    <div class="feat-title">Privacy First</div>
+    <div class="feat-desc">Your content is never stored or used for training our models.</div>
+  </div>
+</div>
+    </section>
+
+    <!-- LIVE DEMO -->
+    <section id="demo" class="section section-dark">
+      <div class="container">
+        <div class="section-head center-head">
+          <div class="kicker">LIVE DEMO</div>
+          <h2 class="h2">See It In Action.</h2>
+        </div>
+
+        <div class="demo-compare">
+  <div class="demo-card">
+    <div class="demo-top">
+      <span class="badge badge-cyan">ORIGINAL</span>
+    </div>
+    <div class="demo-meta mono">2,400 words • 12 min read</div>
+    <div class="demo-text" aria-hidden="true">
+      <p>Artificial intelligence is rapidly transforming how we work, communicate, and create. In 2025, the most successful systems are designed to understand context, not just keywords...</p>
+    </div>
+    <div class="demo-wordcount mono">2,400 words</div>
+  </div>
+
+
+  <div class="demo-card">
+    <div class="demo-top">
+      <span class="badge badge-violet">SUMMARY</span>
+      <span class="demo-fast mono">Generated in 3.2s</span>
+    </div>
+    <div class="demo-bullets" aria-hidden="true">
+      <div>Key point one clearly shown</div>
+      <div>Key point two visible</div>
+      <div>Key point three readable</div>
+    </div>
+    <div class="demo-bottom">
+      <span class="demo-wordcount mono">180 words • 1 min read</span>
+      <span class="good-badge">92% shorter</span>
+    </div>
+  </div>
+</div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="section section-dark">
+      <div class="container">
+        <div class="section-head center-head">
+          <div class="kicker">LOVED BY READERS</div>
+          <h2 class="h2">50,000+ People Save Time Daily.</h2>
+        </div>
+
+        <div class="test-grid">
+  <div class="tcard">
+    <div class="tmark">❝</div>
+    <div class="tquote">Brevify saves me 2+ hours daily. I summarize every article before deciding if it's worth reading.</div>
+    <div class="stars" aria-hidden="true">★★★★★</div>
+    <div class="tuser">
+      <div>
+        <div class="tname">Ali Ahmed</div>
+        <div class="tmeta">Content Strategist • <span class="vio">BREVIFY</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tcard">
+    <div class="tmark">❝</div>
+    <div class="tquote">The accuracy is incredible. It captures the main points better than I could do manually.</div>
+    <div class="stars" aria-hidden="true">★★★★★</div>
+    <div class="tuser">
+      <div>
+        <div class="tname">Hassan</div>
+        <div class="tmeta">Tech Writer • <span class="vio">BREVIFY</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tcard">
+    <div class="tmark">❝</div>
+    <div class="tquote">Game changer for research. I process 10x more content in the same amount of time.</div>
+    <div class="stars" aria-hidden="true">★★★★★</div>
+    <div class="tuser">
+      <div>
+        <div class="tname">Rana Hassnain</div>
+        <div class="tmeta">Researcher • <span class="vio">BREVIFY</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq">
+      <div class="container">
+        <div class="section-head">
+          <div class="kicker">FAQ</div>
+          <h2 class="h2">Common Questions.</h2>
+        </div>
+
+        <div class="faq">
+          <div class="faq-item">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>How accurate are the summaries?</span>
+              <span class="faq-plus" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-a" hidden>
+              Our AI achieves 94% accuracy in capturing key information using advanced language models.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>Which websites are supported?</span>
+              <span class="faq-plus" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-a" hidden>
+              We support 10,000+ websites including blogs, news sites, research papers and more.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>How long does it take?</span>
+              <span class="faq-plus" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-a" hidden>
+              Most summaries are ready in under 10 seconds depending on article length.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>Is my content private?</span>
+              <span class="faq-plus" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-a" hidden>
+              Yes. We never store your content or use it for training. Your privacy is our priority.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>Can I summarize in other languages?</span>
+              <span class="faq-plus" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-a" hidden>
+              Yes! We support 20+ languages for both input and output.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>Is there an API available?</span>
+              <span class="faq-plus" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-a" hidden>
+              Yes, our API is available on the Team plan with full documentation.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="final-cta">
+      <div class="container final-inner">
+        <div class="final-glow"></div>
+        <h2 class="final-title">Stop Reading Everything.</h2>
+        <h2 class="final-title gradient2">Start Understanding Everything.</h2>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <!-- FOOTER -->
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="foot-topline"></div>
+    <div class="footer-grid">
+      <div>
+        <div class="foot-brand">
+          <span class="brand-text">BREVIFY</span>
+        </div>
+      </div>
+
+      <div class="foot-col">
+        <div class="foot-head">Product</div>
+        <a class="foot-link" href="#features">Features</a>
+        <a class="foot-link" href="#faq">FAQ</a>
+      </div>
+    </div>
+
+    <div class="foot-bottom">
+      <div class="status mono"><span class="status-dot" aria-hidden="true"></span>All Systems Operational</div>
+      <div class="social mono">
+        <a href="#" class="foot-link">LinkedIn</a>
+        <a href="#" class="foot-link">GitHub</a>
+      </div>
+      <div class="copyright mono">© 2026 Brevify AI</div>
+    </div>
+  </div>
+</footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
