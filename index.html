@@ -33,8 +33,20 @@
 
       <div class="nav-cta">
         <button class="btn btn-primary" type="button" data-scroll="#summarizer">100% Free</button>
+        <button id="navToggle" class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+          <span class="nav-toggle-bar" aria-hidden="true"></span>
+          <span class="nav-toggle-bar" aria-hidden="true"></span>
+          <span class="nav-toggle-bar" aria-hidden="true"></span>
+        </button>
       </div>
     </div>
+
+    <!-- Mobile dropdown menu (shown below 980px when toggled) -->
+    <nav id="mobileMenu" class="mobile-menu" aria-label="Mobile" hidden>
+      <a href="#features" data-scroll="#features">Features</a>
+      <a href="#how" data-scroll="#how">How It Works</a>
+      <a href="#faq" data-scroll="#faq">FAQ</a>
+    </nav>
   </header>
 
   <main id="top">
@@ -147,7 +159,6 @@
                     <span class="ready-dot" aria-hidden="true"></span>
                     <span class="output-title">Summary Ready</span>
                   </div>
-                  <div class="blog-title" id="blogTitle"></div>
                 </div>
 
                 <div class="output-right">

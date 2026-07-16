@@ -1,3 +1,12 @@
+// Talk to a local backend during development, and to the deployed
+// Render service in production. Running the page from localhost (or a
+// file:// preview) points fetch at your local server on :3000, so you
+// no longer hit the sleeping Render instance and get "Failed to fetch".
+const BACKEND_URL = (() => {
+  const host = location.hostname;
+  const isLocal = host === "localhost" || host === "127.0.0.1" || host === "" ;
+  return isLocal ? "http://localhost:3000" : "https://brevify-backend.onrender.com";
+})();
 (() => {
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -15,6 +24,7 @@
   const urlInput = $('#urlInput');
   const textInput = $('#textInput');
   const clearUrl = $('#clearUrl');
+  const charCount = $('#charCount');
 
   const tabs = $$('.tab');
   const panels = $$('.panel');
@@ -38,7 +48,6 @@
   const streamText = $('#streamText');
   const cursor = $('#cursor');
 
-  const blogTitle = $('#blogTitle');
   const origWords = $('#origWords');
   const sumWords = $('#sumWords');
   const timeSaved = $('#timeSaved');
@@ -155,7 +164,7 @@ const updateCharCount = () => {
     return { words, minutes };
   };
 
-  // STREAM WORDS WITH AUTO SCROLL
+  // STREAM WORDS
 const streamWords = async ({ text, onWord, onDone, delayMs = 30 }) => {
     const words = (text || '').split(/(\s+)/).filter(w => w !== '');
     state.words = words;
@@ -169,7 +178,7 @@ const streamWords = async ({ text, onWord, onDone, delayMs = 30 }) => {
 
     const total = words.length;
     const summaryContainer = document.querySelector('.summary-body');
-    
+
     const tickProgress = (idx) => {
         const pct = Math.min(95, Math.round((idx / total) * 95));
         const wrap = state.mode === 'url' ? progressWrap : progressWrapText;
@@ -177,35 +186,20 @@ const streamWords = async ({ text, onWord, onDone, delayMs = 30 }) => {
         fill.style.width = `${pct}%`;
     };
 
+    // Bring the summary into view once when streaming begins, then leave the
+    // page alone so the user can scroll freely while text keeps generating.
+    if (summaryContainer) {
+        summaryContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
     for (let i = 0; i < words.length; i++) {
         const w = words[i];
         state.wordIndex = i;
         if (w === '\n') continue;
         onWord(w);
         tickProgress(i);
-        
-        // =============================================
-        // AUTO SCROLL WITH STREAMING
-        // =============================================
-        // Scroll every 5 words to keep summary in view
-        if (i % 5 === 0 || i === words.length - 1) {
-            if (summaryContainer) {
-                summaryContainer.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'end'
-                });
-            }
-        }
-        
-        await new Promise((r) => setTimeout(r, delayMs));
-    }
 
-    // Final scroll to complete summary
-    if (summaryContainer) {
-        summaryContainer.scrollIntoView({
-            behavior: 'smooth',
-            block: 'end'
-        });
+        await new Promise((r) => setTimeout(r, delayMs));
     }
 
     onDone();
@@ -218,7 +212,6 @@ const streamWords = async ({ text, onWord, onDone, delayMs = 30 }) => {
   };
 
   const setOutputMeta = ({ title, originalWords, summaryWords, timeSavedMinutes }) => {
-    blogTitle.textContent = title || '—';
     origWords.textContent = originalWords.toLocaleString();
     sumWords.textContent = summaryWords.toLocaleString();
     timeSaved.textContent = `${timeSavedMinutes} min`;
@@ -285,7 +278,7 @@ const streamWords = async ({ text, onWord, onDone, delayMs = 30 }) => {
 
   const saveSummary = () => {
     const text = streamText.textContent.trim();
-    const title = blogTitle.textContent || 'Brevify Summary';
+    const title = 'Brevify Summary';
     const item = {
       title,
       text,
@@ -351,7 +344,10 @@ const streamWords = async ({ text, onWord, onDone, delayMs = 30 }) => {
     return wrap;
   };
 
-  const handleSummarize = async () => {
+// BACKEND_URL is defined once at the top of the file (auto-detects
+// localhost vs. Render), so no second declaration is needed here.
+
+const handleSummarize = async () => {
     if (state.isLoading) return;
 
     const inputText = getCurrentInputText();
@@ -387,10 +383,9 @@ const streamWords = async ({ text, onWord, onDone, delayMs = 30 }) => {
         updateStatusSequence(state.mode);
         await cycleStatus(state.mode);
 
-        // Log what we're sending
         console.log("Sending to backend:", { text: inputText.substring(0, 100) + "..." });
 
-        const response = await fetch("http://localhost:3000/summarize", {
+        const response = await fetch(`${BACKEND_URL}/summarize`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -402,7 +397,6 @@ const streamWords = async ({ text, onWord, onDone, delayMs = 30 }) => {
 
         const data = await response.json();
 
-        // Handle error response
         if (!response.ok) {
             throw new Error(data.message || "Server error");
         }
@@ -413,7 +407,6 @@ const streamWords = async ({ text, onWord, onDone, delayMs = 30 }) => {
 
         let finalText = data.summary;
 
-        // Clean up the summary
         finalText = finalText
             .replace(/#{1,6}/g, "")
             .replace(/\*\*/g, "")
@@ -455,8 +448,6 @@ const streamWords = async ({ text, onWord, onDone, delayMs = 30 }) => {
     } catch (error) {
         console.error("Summarize Error:", error);
         alert(error.message || "Failed to summarize. Please try again.");
-
-        // Hide output on error
         outputWrap.hidden = true;
 
     } finally {
@@ -466,34 +457,33 @@ const streamWords = async ({ text, onWord, onDone, delayMs = 30 }) => {
 };
 
   summarizeBtn.addEventListener('click', handleSummarize);
+  summarizeBtnText.addEventListener('click', handleSummarize);
   // Copy/download/share/save/regenerate/rating
   copyBtn.addEventListener('click', triggerCopy);
   downloadBtn.addEventListener('click', triggerDownload);
   shareBtn.addEventListener('click', triggerShare);
   saveBtn.addEventListener('click', saveSummary);
 
-// REGENERATE BUTTON - URL MODE FIX
 regenBtn.addEventListener("click", async () => {
-    // Get input from URL input field only
-    const urlInput = document.getElementById('urlInput');
-    const inputText = urlInput.value.trim();
-    
+    // Regenerate against whichever input the user is actually using
+    // (URL vs. pasted text), instead of always reading the URL field.
+    const inputText = (getCurrentInputText() || '').trim();
+
     if (!inputText) {
-        alert("Please paste a URL first.");
+        alert(state.mode === 'url' ? "Please paste a URL first." : "Please paste some text first.");
         return;
     }
-    
-    if (!inputText.startsWith('http://') && !inputText.startsWith('https://')) {
-        alert("Please enter a valid URL starting with http:// or https://");
+
+    if (state.mode === 'url' && !inputText.startsWith('http://') && !inputText.startsWith('https://')) {
+        alert("Please enter a valid URL.");
         return;
     }
-    
-    // Show loading state
+
     regenBtn.classList.add('loading');
     regenBtn.textContent = 'Regenerating...';
-    
+
     try {
-        const response = await fetch("http://localhost:3000/summarize", {
+        const response = await fetch(`${BACKEND_URL}/summarize`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -502,62 +492,56 @@ regenBtn.addEventListener("click", async () => {
                 text: inputText
             })
         });
-        
+
         const data = await response.json();
-        
+
         if (!response.ok) {
             throw new Error(data.message || "Regenerate failed");
         }
-        
+
         if (!data.success) {
             throw new Error(data.message);
         }
-        
-        // Update summary with streaming effect
-        const streamText = document.getElementById('streamText');
-        const cursor = document.getElementById('cursor');
-        
-        // Clear old summary
+
+        let finalText = data.summary
+            .replace(/#{1,6}/g, "")
+            .replace(/\*\*/g, "")
+            .trim();
+
+        if (!finalText || finalText.length < 10) {
+            throw new Error("Generated summary is too short");
+        }
+
+        const original = estimateOriginal(inputText);
+        const summaryWordsCount = normalizeText(finalText).split(' ').filter(Boolean).length;
+
+        setOutputMeta({
+            title: state.mode === 'url'
+                ? inputText.replace(/^https?:\/\//, "").split("/")[0]
+                : "Pasted Article",
+            originalWords: original.words,
+            summaryWords: summaryWordsCount,
+            timeSavedMinutes: Math.max(1, Math.round(original.minutes * 0.6))
+        });
+
+        outputWrap.hidden = false;
         streamText.innerHTML = '';
         cursor.style.opacity = '1';
-        
-        // Stream new summary word by word
-        const words = data.summary.split(/(\s+)/).filter(w => w !== '');
-        let currentText = '';
-        
-        for (let i = 0; i < words.length; i++) {
-            const word = words[i];
-            currentText += word;
-            streamText.textContent = currentText;
-            
-            // Update summary word count
-            const summaryWords = currentText.trim().split(/\s+/).filter(w => w.length > 0).length;
-            document.getElementById('sumWords').textContent = summaryWords;
-            
-            // Random delay for streaming effect
-            await new Promise(r => setTimeout(r, 10 + Math.random() * 20));
-        }
-        
-        cursor.style.opacity = '0';
-        
-        // Update original words
-        const origWords = inputText.trim().split(/\s+/).filter(w => w.length > 0).length;
-        document.getElementById('origWords').textContent = origWords;
-        
-        // Update time saved
-        const origTime = Math.ceil(origWords / 200);
-        const sumWords = data.summary.trim().split(/\s+/).filter(w => w.length > 0).length;
-        const sumTime = Math.ceil(sumWords / 200);
-        const saved = origTime - sumTime;
-        document.getElementById('timeSaved').textContent = saved > 0 ? saved + ' min' : '0 min';
-        
-        // Update blog title
-        const titleGuess = inputText.replace(/^https?:\/\//, "").split("/")[0];
-        document.getElementById('blogTitle').textContent = titleGuess;
-        
-        // Show output if hidden
-        document.getElementById('outputWrap').hidden = false;
-        
+
+        // streamWords auto-scrolls the summary into view as it types.
+        await streamWords({
+            text: finalText,
+            onWord: (word) => {
+                streamText.append(word);
+            },
+            onDone: () => {
+                cursor.style.opacity = '0';
+            },
+            delayMs: 25
+        });
+
+        state.currentSummary = finalText;
+
     } catch (error) {
         console.error("Regenerate Error:", error);
         alert("Failed to regenerate summary: " + error.message);
@@ -573,8 +557,7 @@ regenBtn.addEventListener("click", async () => {
       b.style.borderColor = up ? 'rgba(16,185,129,0.55)' : 'rgba(239,68,68,0.55)';
       b.textContent = up ? '✓ Helpful' : '✗ Not helpful';
       setTimeout(() => {
-        // restore label
-        b.textContent = up ? '👍 Thumbs up' : '👎 Thumbs down';
+
       }, 1600);
     });
   });
@@ -663,109 +646,36 @@ regenBtn.addEventListener("click", async () => {
     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
+  // Mobile hamburger menu
+  const navToggle = $('#navToggle');
+  const mobileMenu = $('#mobileMenu');
+  if (navToggle && mobileMenu) {
+    const closeMenu = () => {
+      navToggle.classList.remove('is-open');
+      navToggle.setAttribute('aria-expanded', 'false');
+      navToggle.setAttribute('aria-label', 'Open menu');
+      mobileMenu.classList.remove('show');
+      mobileMenu.hidden = true;
+    };
+    const openMenu = () => {
+      navToggle.classList.add('is-open');
+      navToggle.setAttribute('aria-expanded', 'true');
+      navToggle.setAttribute('aria-label', 'Close menu');
+      mobileMenu.hidden = false;
+      mobileMenu.classList.add('show');
+    };
+    navToggle.addEventListener('click', () => {
+      if (mobileMenu.classList.contains('show')) closeMenu();
+      else openMenu();
+    });
+    // Close after picking a destination (the global smooth-scroll handler does the scrolling)
+    mobileMenu.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeMenu));
+    // Close if the viewport grows back to desktop so the panel can't get stuck open
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 980) closeMenu();
+    });
+  }
+
   // Cursor blink toggle while streaming
   cursor.style.opacity = '1';
 })();
-const summarizeBtnText = document.getElementById("summarizeBtnText");
-
-summarizeBtnText.addEventListener("click", async () => {
-
-    const text = document.getElementById("textInput").value;
-
-    if (!text.trim()) {
-        alert("Please enter some text.");
-        return;
-    }
-
-    try {
-
-        // Button loading start
-        summarizeBtnText.classList.add("loading");
-
-        const startTime = Date.now();
-
-        const response = await fetch("http://localhost:3000/summarize", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                text: text
-            })
-        });
-
-
-        const data = await response.json();
-
-        console.log(data);
-
-
-        // Show Output Card
-        outputWrap.hidden = false;
-
-
-        // Show Summary
-        streamText.textContent = data.summary;
-
-
-
-        // =========================
-        // WORD COUNT CALCULATION
-        // =========================
-
-        const originalWords = text
-            .trim()
-            .split(/\s+/)
-            .filter(word => word.length > 0)
-            .length;
-
-
-        const summaryWords = data.summary
-            .trim()
-            .split(/\s+/)
-            .filter(word => word.length > 0)
-            .length;
-
-
-
-        // Calculate Time Saved
-        const originalReadingTime = Math.ceil(originalWords / 200);
-        const summaryReadingTime = Math.ceil(summaryWords / 200);
-
-        const timeSaved = originalReadingTime - summaryReadingTime;
-
-
-
-        // =========================
-        // UPDATE STATS
-        // =========================
-
-        document.getElementById("origWords").textContent = originalWords;
-
-        document.getElementById("sumWords").textContent = summaryWords;
-
-        document.getElementById("timeSaved").textContent = 
-            timeSaved > 0 ? timeSaved + " min" : "0 min";
-
-
-
-        // Optional Blog Title
-        document.getElementById("blogTitle").textContent = 
-            "Text Summary";
-
-
-        // Stop Loading
-        summarizeBtnText.classList.remove("loading");
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        summarizeBtnText.classList.remove("loading");
-
-        alert("Backend Error");
-
-    }
-
-});

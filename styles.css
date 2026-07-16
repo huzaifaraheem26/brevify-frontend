@@ -93,6 +93,54 @@ button,input,select,textarea{font-family:inherit}
 
 .nav-cta{display:flex; gap:14px; align-items:center}
 
+/* Hamburger toggle — hidden on desktop, revealed at <=980px */
+.nav-toggle{
+  display:none;
+  flex-direction:column;
+  justify-content:center;
+  gap:5px;
+  width:40px; height:40px;
+  padding:0;
+  border-radius:10px;
+  border:1px solid rgba(124,58,237,0.25);
+  background:rgba(15,15,26,0.35);
+  cursor:pointer;
+  transition:border-color .2s ease, background .2s ease;
+}
+.nav-toggle:hover{border-color:rgba(124,58,237,0.6); background:rgba(124,58,237,0.12)}
+.nav-toggle-bar{
+  display:block;
+  width:18px; height:2px;
+  margin:0 auto;
+  border-radius:2px;
+  background:rgba(255,255,255,0.9);
+  transition:transform .25s ease, opacity .2s ease;
+}
+/* Animate into an X when open */
+.nav-toggle.is-open .nav-toggle-bar:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-toggle.is-open .nav-toggle-bar:nth-child(2){opacity:0}
+.nav-toggle.is-open .nav-toggle-bar:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* Mobile dropdown panel */
+.mobile-menu{
+  display:none;
+  flex-direction:column;
+  gap:4px;
+  width:min(1180px, calc(100% - 40px));
+  margin:0 auto;
+  padding:10px 0 14px;
+}
+.mobile-menu a{
+  padding:12px 14px;
+  border-radius:10px;
+  color:rgba(255,255,255,0.9);
+  font-size:15px;
+  transition:background .2s ease, color .2s ease;
+}
+.mobile-menu a:hover{background:rgba(124,58,237,0.12); color:var(--v1)}
+/* Only render the panel once the nav has actually opened it */
+.mobile-menu.show{display:flex}
+
 .btn{
   border:1px solid transparent;
   background:transparent;
@@ -413,7 +461,6 @@ button,input,select,textarea{font-family:inherit}
 .ready-dot{width:10px; height:10px; border-radius:50%; background:rgba(16,185,129,0.95); box-shadow:0 0 18px rgba(16,185,129,0.35); animation:pulseDot 2s ease-in-out infinite}
 @keyframes pulseDot{0%,100%{transform:scale(1); opacity:1}50%{transform:scale(1.4); opacity:.7}}
 .output-title{font-family:"Space Grotesk"; font-size:16px; color:#fff}
-.blog-title{margin-top:12px; font-size:13px; color:rgba(148,163,184,0.95)}
 
 .stats{color:rgba(34,211,238,0.95); font-size:12px; line-height:1.7}
 .divider{height:1px; background:rgba(124,58,237,0.2); margin:18px 0}
@@ -571,6 +618,10 @@ button,input,select,textarea{font-family:inherit}
 /* Responsive */
 @media (max-width: 980px){
   .nav-links{display:none}
+  .nav-toggle{display:flex}
+  /* When the menu is open, let the fixed nav grow to hold the dropdown */
+  .nav.is-open{height:auto; padding-bottom:6px}
+  .nav.is-open .nav-inner{padding-top:12px}
   .hero-title{font-size:54px}
   .options-row{grid-template-columns:1fr;}
   .grid-3{grid-template-columns:1fr 1fr}
@@ -630,4 +681,74 @@ button,input,select,textarea{font-family:inherit}
 .input-row,
 .input-wrap{
  width:100%;
+}
+
+/* =========================================================
+   RESPONSIVE — tablet
+   ========================================================= */
+@media (max-width: 768px){
+  .section{padding:56px 0}
+  .hero-inner{padding-top:92px}
+
+  .hero-title{font-size:44px}
+  .hero-sub{font-size:15px; max-width:100%}
+  .h2{font-size:38px}
+  .final-title{font-size:46px}
+
+  .card{padding:22px}
+
+  /* Steps stack vertically */
+  .steps{flex-direction:column; align-items:stretch; gap:16px}
+  .step-connector{display:none}
+
+  .grid-3{grid-template-columns:1fr 1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+
+  /* Output card reflow */
+  .output-header{flex-direction:column; align-items:flex-start; gap:12px}
+  .output-right{width:100%}
+  .stats{font-size:12px}
+
+  /* Actions stack into full-width groups */
+  .actions{flex-direction:column; align-items:stretch; gap:12px}
+  .actions-left,.actions-right{width:100%; justify-content:stretch}
+  .actions-left .btn,.actions-right .btn{flex:1}
+
+  .rating{flex-direction:column; align-items:flex-start; gap:12px}
+  .rating-pills{width:100%}
+  .rating-pills .btn{flex:1}
+
+  .footer-grid{grid-template-columns:1fr; gap:24px}
+  .foot-bottom{flex-direction:column; align-items:flex-start; gap:14px}
+  .foot-link{text-align:left}
+}
+
+/* =========================================================
+   RESPONSIVE — phone
+   ========================================================= */
+@media (max-width: 480px){
+  .container{width:calc(100% - 28px)}
+
+  .hero-inner{padding-top:84px}
+  .hero-title{font-size:34px; line-height:1.08}
+  .hero-sub{font-size:14px}
+  .h2{font-size:30px}
+  .final-title{font-size:34px}
+
+  .card{padding:18px; border-radius:18px}
+
+  /* Tabs stay tappable */
+  .tabs{gap:8px}
+  .tab{flex:1; justify-content:center; padding:10px 8px; font-size:13px}
+
+  .btn-summarize{width:100%}
+
+  .grid-3{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr}
+  .test-grid{grid-template-columns:1fr}
+
+  /* Comfortable tap targets everywhere */
+  .btn{min-height:44px}
+
+  .input,.textarea{font-size:16px} /* prevents iOS zoom-on-focus */
 }
