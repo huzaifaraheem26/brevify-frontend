@@ -553,8 +553,8 @@ regenBtn.addEventListener("click", async () => {
   ratingButtons.forEach((b) => {
     b.addEventListener('click', () => {
       const up = b.dataset.rate === 'up';
-      ratingButtons.forEach((x) => x.style.borderColor = 'rgba(124,58,237,0.14)');
-      b.style.borderColor = up ? 'rgba(16,185,129,0.55)' : 'rgba(239,68,68,0.55)';
+      ratingButtons.forEach((x) => x.style.borderColor = 'rgba(85,132,103,0.14)');
+      b.style.borderColor = up ? 'rgba(85,132,103,0.55)' : 'rgba(196,85,59,0.55)';
       b.textContent = up ? '✓ Helpful' : '✗ Not helpful';
       setTimeout(() => {
 
